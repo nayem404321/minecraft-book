@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEOW GOP GOP - Minecraft Java Complete Guide</title>
+    <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Rajdhani', sans-serif; }
+        
+        body {
+            min-height: 100vh;
+            background: #06100a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+            color: white;
+        }
+
+        #webgl-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        #lock-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100vh;
+            animation: fadeIn 0.8s ease-out;
+        }
+        .container {
+            width: 900px;
+            min-height: 540px;
+            display: flex;
+            background: rgba(10,30,18,.95);
+            border: 2px solid #36ff59;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 0 35px #00ff4440;
+            backdrop-filter: blur(10px);
+        }
+        .left {
+            width: 50%;
+            background: linear-gradient(transparent, rgba(6, 21, 11, 0.9)),
+                        repeating-linear-gradient(90deg, #235e31 0px, #235e31 48px, #194b28 49px, #194b28 50px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .left h2 {
+            color: #48ff62;
+            font-size: 24px;
+            text-shadow: 0 0 15px #35ff50;
+            font-family: 'Press Start 2P', monospace;
+        }
+        .left p { margin-top: 15px; color: #a6c8ac; font-size: 15px; }
+        
+        /* Image styling for Left Banner */
+        .left-cat-img {
+            width: 130px;
+            height: 130px;
+            object-fit: cover;
+            border-radius: 20px;
+            filter: drop-shadow(0 0 20px #39ff50);
+            animation: bounce 2s infinite ease-in-out, catGlow 3s infinite alternate;
+            cursor: pointer;
+            user-select: none;
+            transition: transform 0.3s;
+        }
+        .left-cat-img:hover { transform: scale(1.1) rotate(5deg); }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0) rotate(-3deg); }
+            50% { transform: translateY(-20px) rotate(3deg); }
+        }
+        @keyframes catGlow {
+            0% { filter: drop-shadow(0 0 15px #39ff50); }
+            100% { filter: drop-shadow(0 0 30px #a3ffad); }
+        }
+        .right {
+            width: 50%;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        .logo { text-align: center; font-size: 40px; }
+        h1 {
+            text-align: center;
+            color: #39ff50;
+            font-size: 22px;
+            margin: 10px 0;
+            font-family: 'Press Start 2P', monospace;
+        }
+        .subtitle {
+            text-align: center;
+            color: #a6c8ac;
+            font-size: 11px;
+            letter-spacing: 2px;
+            margin-bottom: 30px;
+        }
+        label { color: #39ff50; font-size: 12px; font-weight: bold; margin-bottom: 6px; display: block; }
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 18px;
+            background: #07140c;
+            border: 1px solid #286c39;
+            border-radius: 9px;
+            outline: none;
+            color: white;
+            font-size: 14px;
+        }
+        .login-btn {
+            width: 100%;
+            padding: 14px;
+            background: #39ff50;
+            color: #06100a;
+            border: none;
+            border-radius: 9px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .login-btn:hover { background: #a3ffad; box-shadow: 0 0 30px #39ff50; }
+        .error { color: #f87171; font-size: 13px; margin-top: 12px; text-align: center; font-weight: bold; }
+        .footer { text-align: center; color: #60866a; font-size: 10px; margin-top: 25px; }
+
+        #app-content {
+            display: none;
+            max-width: 1350px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            width: 100%;
+        }
+
+        header { text-align: center; margin-bottom: 30px; }
+        header h1 { 
+            font-family: 'Press Start 2P', monospace;
+            font-size: 18px; color: #facc15; 
+            margin-bottom: 12px;
+        }
+        header p { color: #39ff50; font-size: 15px; font-weight: 700; }
+
+        .filter-bar {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 30px;
+        }
+        .filter-btn {
+            background: rgba(10, 30, 18, 0.9);
+            border: 2px solid #286c39;
+            border-radius: 10px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            color: #d2ffda;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .filter-btn img { width: 22px; height: 22px; image-rendering: pixelated; }
+        .filter-btn:hover, .filter-btn.active {
+            background: #164b27;
+            border-color: #39ff50;
+            color: #39ff50;
+            transform: translateY(-4px) scale(1.05);
+        }
+
+        .search-box { position: relative; max-width: 650px; margin: 0 auto 30px auto; }
+        .search-box input {
+            padding: 16px 20px 16px 50px; border-radius: 10px; font-size: 15px; background: #0b170e;
+            border: 2px solid #286c39; color: #fff; margin-bottom: 0;
+        }
+        .search-icon { position: absolute; left: 18px; top: 50%; transform: translateY(-50%); font-size: 20px; }
+
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 24px; }
+        
+        .card {
+            background: linear-gradient(145deg, rgba(10, 30, 18, 0.95), rgba(5, 16, 10, 0.98)); 
+            border-radius: 14px; padding: 22px; border: 2px solid #1a4d27;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.6); 
+            transition: all 0.4s;
+        }
+        .card:hover { 
+            transform: translateY(-8px) scale(1.03); 
+            border-color: #39ff50; 
+        }
+
+        .card-header { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; }
+        .icon-box { 
+            width: 60px; height: 60px; background: #040a06; border-radius: 10px; 
+            border: 2px solid #286c39; display: flex; align-items: center; justify-content: center;
+        }
+        .icon-box img { width: 42px; height: 42px; image-rendering: pixelated; object-fit: contain; }
+
+        .card h3 { font-size: 20px; color: #f8fafc; font-weight: 700; }
+        .badge-container { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+        .badge { 
+            background: #06150b; color: #39ff50; font-size: 12px; padding: 5px 10px; 
+            border-radius: 6px; border: 1px solid #1f6330; font-weight: 700; text-transform: uppercase;
+        }
+        .card p { font-size: 14px; color: #a6c8ac; line-height: 1.6; margin-bottom: 12px; }
+        .max-lvl { color: #facc15; font-weight: 700; font-size: 13px; }
+    </style>
+</head>
+<body>
+
+    <canvas id="webgl-canvas"></canvas>
+
+    <div id="lock-screen">
+        <div class="container">
+            <div class="left">
+                <!-- Custom Image Added Here -->
+                <img src="https://i.pinimg.com/736x/7d/81/a4/7d81a45c89fec19a05f865c154c5a09a.jpg" alt="Meow World Cat" class="left-cat-img">
+                <h2>MEOW WORLD</h2>
+                <p>Welcome to the Minecraft World!</p>
+            </div>
+            <div class="right">
+                <div class="logo">😹</div>
+                <h1>MEOW GOP GOP</h1>
+                <div class="subtitle">WELCOME TO THE CAT WORLD</div>
+
+                <div id="loginForm">
+                    <label>PLAYER NAME</label>
+                    <input type="text" id="username" placeholder="Enter your name..." required>
+
+                    <label>PASSWORD</label>
+                    <input type="password" id="password" placeholder="Enter your password..." required>
+
+                    <button class="login-btn" onclick="loginApp()">▶ LOGIN</button>
+                    <div id="lock-error" class="error"></div>
+                </div>
+
+                <div class="footer">MADE FOR GAMERS • MEOW 😺</div>
+            </div>
+        </div>
+    </div>
+
+    <div id="app-content">
+        <header>
+            <h1>💎 MINECRAFT JAVA COMPLETE ENCHANTMENT GUIDE 💎</h1>
+            <p>আইটেমে ক্লিক করে দেখুন কোন কোন এনচ্যান্টেড বুক ব্যবহার করা যাবে!</p>
+        </header>
+
+        <div class="filter-bar" id="filter-bar">
+            <button class="filter-btn active" onclick="filterByItem('All', event)">⭐ All Items</button>
+            <button class="filter-btn" onclick="filterByItem('Helmet', event)"><img src="https://minecraft.wiki/images/Baby_Diamond_Helmet_JE1_BE1.png?fb451" alt="Helmet"> Helmet</button>
+            <button class="filter-btn" onclick="filterByItem('Chestplate', event)"><img src="https://minecraft.wiki/images/Diamond_Chestplate_JE3_BE2.png?40540" alt="Chestplate"> Chestplate</button>
+            <button class="filter-btn" onclick="filterByItem('Leggings', event)"><img src="https://minecraft.wiki/images/Diamond_Leggings_JE2_BE2.png?a2414" alt="Leggings"> Leggings</button>
+            <button class="filter-btn" onclick="filterByItem('Boots', event)"><img src="https://minecraft.wiki/images/Diamond_Boots_JE2_BE2.png?e0b25" alt="Boots"> Boots</button>
+            <button class="filter-btn" onclick="filterByItem('Sword', event)"><img src="https://minecraft.wiki/images/Enchanted_Diamond_Sword.gif?f741f" alt="Sword"> Sword</button>
+            <button class="filter-btn" onclick="filterByItem('Mace', event)"><img src="https://minecraft.wiki/images/Enchanted_Mace.gif?7c432" alt="Mace"> Mace</button>
+            <button class="filter-btn" onclick="filterByItem('Pickaxe', event)"><img src="https://minecraft.wiki/images/Enchanted_Diamond_Pickaxe.gif?c7aaa" alt="Pickaxe"> Pickaxe</button>
+            <button class="filter-btn" onclick="filterByItem('Axe', event)"><img src="https://minecraft.wiki/images/Enchanted_Diamond_Axe.gif?9b71e" alt="Axe"> Axe</button>
+            <button class="filter-btn" onclick="filterByItem('Shovel', event)"><img src="https://minecraft.wiki/images/Enchanted_Diamond_Shovel.gif" alt="Shovel"> Shovel</button>
+            <button class="filter-btn" onclick="filterByItem('Bow', event)"><img src="https://minecraft.wiki/images/thumb/Enchanted_Bow.gif/16px-Enchanted_Bow.gif?86b93" alt="Bow"> Bow</button>
+            <button class="filter-btn" onclick="filterByItem('Crossbow', event)"><img src="https://minecraft.wiki/images/Enchanted_Crossbow.gif" alt="Crossbow"> Crossbow</button>
+            <button class="filter-btn" onclick="filterByItem('Trident', event)"><img src="https://minecraft.wiki/images/Trident.png" alt="Trident"> Trident</button>
+            <button class="filter-btn" onclick="filterByItem('Spear', event)"><img src="https://minecraft.wiki/images/Trident.png" alt="Spear"> Spear</button>
+            <button class="filter-btn" onclick="filterByItem('Fishing Rod', event)"><img src="https://minecraft.wiki/images/Fishing_Rod_JE2_BE2.png?4862d" alt="Fishing Rod"> Fishing Rod</button>
+        </div>
+
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="search-input" onkeyup="searchData()" placeholder="বুক বা আইটেম খুঁজুন (যেমন: Sword, Trident, Spear, Protection, Mending)...">
+        </div>
+
+        <div class="grid" id="results-list"></div>
+    </div>
+
+    <script id="js-vertex-shader" type="x-shader/x-vertex">
+        attribute vec3 position;
+        void main() {
+            gl_Position = vec4(position, 1.0);
+        }
+    </script>
+
+    <script id="js-fragment-shader" type="x-shader/x-fragment">
+        precision highp float;
+        uniform vec2 resolution;
+        uniform float time;
+        uniform float xScale;
+        uniform float yScale;
+        uniform float distortion;
+        uniform vec2 mouse;
+
+        void main() {
+            vec2 p = (gl_FragCoord.xy * 2.0 - resolution) / min(resolution.x, resolution.y);
+            float d = length(p - (mouse - 0.5)) * (distortion * 2.0);
+            
+            float rx = p.x * (1.0 + d);
+            float gx = p.x;
+            float bx = p.x * (1.0 - d);
+
+            float r = 0.05 / abs(p.y + sin((rx + time) * xScale) * (yScale + mouse.y * 0.2));
+            float g = 0.05 / abs(p.y + sin((gx + time) * xScale) * yScale);
+            float b = 0.05 / abs(p.y + sin((bx + time) * xScale) * (yScale + mouse.x * 0.2));
+            
+            gl_FragColor = vec4(r, g, b, 1.0);
+        }
+    </script>
+
+    <script>
+        class Stage {
+            constructor() {
+                this.renderParam = { clearColor: 0x06100a, width: window.innerWidth, height: window.innerHeight };
+                this.cameraParam = { left: -1, right: 1, top: 1, bottom: -1, near: 0, far: -1 };
+                this.scene = null;
+                this.camera = null;
+                this.renderer = null;
+            }
+            init() {
+                this.scene = new THREE.Scene();
+                this.renderer = new THREE.WebGLRenderer({ canvas: document.getElementById("webgl-canvas"), antialias: true });
+                this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+                this.renderer.setClearColor(new THREE.Color(this.renderParam.clearColor));
+                this.renderer.setSize(this.renderParam.width, this.renderParam.height);
+                this.camera = new THREE.OrthographicCamera(this.cameraParam.left, this.cameraParam.right, this.cameraParam.top, this.cameraParam.bottom, this.cameraParam.near, this.cameraParam.far);
+            }
+            onResize() { this.renderer.setSize(window.innerWidth, window.innerHeight); }
+            onRaf() { this.renderer.render(this.scene, this.camera); }
+        }
+
+        class Mesh {
+            constructor(stage) {
+                this.stage = stage;
+                this.mouse = { x: 0.5, y: 0.5, targetX: 0.5, targetY: 0.5 };
+                this.uniforms = {
+                    resolution: { type: "v2", value: [window.innerWidth, window.innerHeight] },
+                    time: { type: "f", value: 0.0 },
+                    xScale: { type: "f", value: 1.0 },
+                    yScale: { type: "f", value: 0.5 },
+                    distortion: { type: "f", value: 0.050 },
+                    mouse: { type: "v2", value: [0.5, 0.5] }
+                };
+            }
+            init() {
+                const position = [-1.0, -1.0, 0.0, 1.0, -1.0, 0.0, -1.0, 1.0, 0.0, 1.0, -1.0, 0.0, -1.0, 1.0, 0.0, 1.0, 1.0, 0.0];
+                const positions = new THREE.BufferAttribute(new Float32Array(position), 3);
+                const geometry = new THREE.BufferGeometry();
+                geometry.setAttribute("position", positions);
+                const material = new THREE.RawShaderMaterial({
+                    vertexShader: document.getElementById("js-vertex-shader").textContent,
+                    fragmentShader: document.getElementById("js-fragment-shader").textContent,
+                    uniforms: this.uniforms,
+                    side: THREE.DoubleSide
+                });
+                this.mesh = new THREE.Mesh(geometry, material);
+                this.stage.scene.add(this.mesh);
+
+                window.addEventListener("mousemove", (e) => {
+                    this.mouse.targetX = e.clientX / window.innerWidth;
+                    this.mouse.targetY = 1.0 - (e.clientY / window.innerHeight);
+                });
+            }
+            onRaf() {
+                this.uniforms.time.value += 0.015;
+                this.mouse.x += (this.mouse.targetX - this.mouse.x) * 0.05;
+                this.mouse.y += (this.mouse.targetY - this.mouse.y) * 0.05;
+                this.uniforms.mouse.value = [this.mouse.x, this.mouse.y];
+            }
+        }
+
+        const name = "Mdnayemkhan202121's Application"; 
+        const ownerid = "UcnSv0pfmo";              
+        const secret = "836050a1f79ab230c54d2f3b32d9ae403ebef0833854aeec9f412d0d8b37a522";              
+        const version = "1.0";
+
+        async function loginApp() {
+            const user = document.getElementById("username").value.trim();
+            const pass = document.getElementById("password").value.trim();
+            const errorBox = document.getElementById("lock-error");
+
+            if (!user || !pass) {
+                errorBox.innerText = "⚠️ Please enter username and password!";
+                return;
+            }
+
+            errorBox.innerText = "⚡ Verifying with KeyAuth...";
+
+            try {
+                const initRes = await fetch(`https://keyauth.win/api/1.2/?type=init&name=${encodeURIComponent(name)}&ownerid=${ownerid}&secret=${secret}&version=${version}`);
+                const initData = await initRes.json();
+
+                if (!initData.success) {
+                    errorBox.innerText = "Error: " + (initData.message || "Init failed!");
+                    return;
+                }
+
+                const response = await fetch(`https://keyauth.win/api/1.2/?type=login&username=${encodeURIComponent(user)}&pass=${encodeURIComponent(pass)}&sessionid=${initData.sessionid}&name=${encodeURIComponent(name)}&ownerid=${ownerid}&secret=${secret}&version=${version}`);
+                const data = await response.json();
+
+                if (data.success) {
+                    document.getElementById("lock-screen").style.display = "none";
+                    document.getElementById("app-content").style.display = "block";
+                    renderData(enchantments);
+                } else {
+                    errorBox.innerText = "Error: " + (data.message || "Invalid Credentials!");
+                }
+            } catch (err) {
+                errorBox.innerText = "⚠️ Server Connection Failed!";
+            }
+        }
+
+        const enchantments = [
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Protection", max: "Max Level: IV", desc: "সকল প্রকার ফিজিক্যাল, এক্সপ্লোশন এবং ফায়ার ড্যামেজ থেকে সুরক্ষা দেয়।", items: ["Helmet", "Chestplate", "Leggings", "Boots"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Fire Protection", max: "Max Level: IV", desc: "আগুনের ড্যামেজ কমায় এবং ফায়ার বা আগুনের স্থায়ীত্ব দ্রুত কমিয়ে দেয়।", items: ["Helmet", "Chestplate", "Leggings", "Boots"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Feather Falling", max: "Max Level: IV", desc: "উঁচু স্থান থেকে পড়ার ফল ড্যামেজ (Fall Damage) কমায়।", items: ["Boots"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Blast Protection", max: "Max Level: IV", desc: "ক্রিপার বা টিএনটি এক্সপ্লোশন ড্যামেজ ও নকব্যাক কমায়।", items: ["Helmet", "Chestplate", "Leggings", "Boots"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Projectile Protection", max: "Max Level: IV", desc: "তীর ও ফায়ারবলের মতো প্রজেক্টাইল ড্যামেজ কমায়।", items: ["Helmet", "Chestplate", "Leggings", "Boots"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Respiration", max: "Max Level: III", desc: "পানির নিচে শ্বাস নেওয়ার সময় এবং দৃষ্টিকোণ বাড়ায়।", items: ["Helmet"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Aqua Affinity", max: "Max Level: I", desc: "পানির নিচে দ্রুত ব্লক ভাঙার গতি বজায় রাখে।", items: ["Helmet"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Thorns", max: "Max Level: III", desc: "আক্রমণকারী শত্রুকে পাল্টা ড্যামেজ ফিরিয়ে দেয়।", items: ["Helmet", "Chestplate", "Leggings", "Boots"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Depth Strider", max: "Max Level: III", desc: "পানির নিচে হাঁটার গতি সাধারণ মাটির গতির মতো বাড়ায়।", items: ["Boots"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Frost Walker", max: "Max Level: II", desc: "পানির ওপর দিয়ে হাঁটার সময় আশপাশের পানি বরফে পরিণত করে।", items: ["Boots"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Soul Speed", max: "Max Level: III", desc: "সোল স্যান্ড এবং সোল সয়েলের ওপর চলার গতি বহুগুণ বাড়ায়।", items: ["Boots"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Swift Sneak", max: "Max Level: III", desc: "ক্রাউচ বা Sneaking অবস্থায় হাঁটার গতি বাড়িয়ে দেয়।", items: ["Leggings"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Sharpness", max: "Max Level: V", desc: "তলোয়ার ও কুড়ালের বেসিক অ্যাটাক ড্যামেজ বাড়িয়ে দেয়।", items: ["Sword", "Axe"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Smite", max: "Max Level: V", desc: "জম্বি ও স্কেলিটনের মতো আনডেড মবের বিরুদ্ধে মারাত্মক ড্যামেজ দেয়।", items: ["Sword", "Axe"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Bane of Arthropods", max: "Max Level: V", desc: "মাকড়সা ও পোকা মবের বিরুদ্ধে অতিরিক্ত ড্যামেজ দেয়।", items: ["Sword", "Axe"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Knockback", max: "Max Level: II", desc: "আক্রমণ করার সময় শত্রুকে দূরে ছিটকে ফেলে দেয়।", items: ["Sword"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Fire Aspect", max: "Max Level: II", desc: "টার্গেটকে আঘাত করে আগুনে পুড়িয়ে দেয়।", items: ["Sword"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Looting", max: "Max Level: III", desc: "মব কিল করার পর রেয়ার ড্রপ আইটেম পাওয়ার সম্ভাবনা বাড়ায়।", items: ["Sword"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Sweeping Edge", max: "Max Level: III", desc: "তলোয়ার দিয়ে সুইপ অ্যাটাকের এলাকা ও ড্যামেজ বাড়ায়।", items: ["Sword"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Density", max: "Max Level: V", desc: "উঁচু থেকে লাফিয়ে পড়ার সময় মেস (Mace) দিয়ে অতিরিক্ত ড্যামেজ দেয়।", items: ["Mace"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Breach", max: "Max Level: IV", desc: "শত্রুর আর্মর বা প্রটেকশন ক্ষমতা ভেদ করে ড্যামেজ দেয়।", items: ["Mace"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Wind Burst", max: "Max Level: III", desc: "মেস দিয়ে আঘাত করার পর হাওয়া তৈরি করে উঁচুতে বাউন্স করিয়ে দেয়।", items: ["Mace"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Efficiency", max: "Max Level: V", desc: "ব্লক মাইনিং এবং কাটার গতি চোখের পলকে বাড়িয়ে দেয়।", items: ["Pickaxe", "Shovel", "Axe", "Hoe"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Silk Touch", max: "Max Level: I", desc: "ব্লক ভাঙলে মূল রূপটিই ড্রপ করে।", items: ["Pickaxe", "Shovel", "Axe", "Hoe"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Unbreaking", max: "Max Level: III", desc: "টুলস ও আর্মরের ডিউরেবিলিটি কম ক্ষয় করে দীর্ঘস্থায়ী করে।", items: ["Pickaxe", "Shovel", "Axe", "Hoe", "Sword", "Bow", "Crossbow", "Trident", "Spear", "Armor"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Fortune", max: "Max Level: III", desc: "ডায়মন্ড ও কোল মাইনিং করার সময় অতিরিক্ত আকরিক দেয়।", items: ["Pickaxe", "Shovel", "Axe"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Power", max: "Max Level: V", desc: "ধনুকের তীর থেকে নিক্ষিপ্ত আক্রমণ ড্যামেজ বাড়িয়ে দেয়।", items: ["Bow"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Punch", max: "Max Level: II", desc: "তীর দিয়ে আঘাত করার সময় লক্ষ্যবস্তুকে দূরে ঠেলে দেয়।", items: ["Bow"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Flame", max: "Max Level: I", desc: "নিক্ষিপ্ত তীরটিকে জ্বলন্ত আগুনে পরিণত করে।", items: ["Bow"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Infinity", max: "Max Level: I", desc: "ইনভেন্টরিতে ১টি তীর থাকলেই আনলিমিটেড তীর নিক্ষেপ করা যায়।", items: ["Bow"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Quick Charge", max: "Max Level: III", desc: "ক্রসবো রিলোড করার সময় অনেক দ্রুত করে দেয়।", items: ["Crossbow"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Multishot", max: "Max Level: I", desc: "১টি তীরের খরচে একসাথে ৩টি দিক দিয়ে তীর নিক্ষেপ করে।", items: ["Crossbow"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Piercing", max: "Max Level: IV", desc: "তীর শত্রুর শরীর ভেদ করে পেছনের মবকে আঘাত করে।", items: ["Crossbow"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Loyalty", max: "Max Level: III", desc: "নিক্ষেপ করার পর ট্রাইডেন্ট আবার হাতে ফিরে আসে।", items: ["Trident"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Riptide", max: "Max Level: III", desc: "পানি বা বৃষ্টির সময় ট্রাইডেন্ট নিক্ষেপ করলে প্লেয়ার উড়ে যায়।", items: ["Trident"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Channeling", max: "Max Level: I", desc: "ঝড়-বৃষ্টির সময় ট্রাইডেন্ট দিয়ে সরাসরি বজ্রপাত ঘটানো যায়।", items: ["Trident"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Impaling", max: "Max Level: V", desc: "পানির মবগুলির বিরুদ্ধে অতিরিক্ত ড্যামেজ দেয়।", items: ["Trident"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Spear Thrust", max: "Max Level: V", desc: "স্পিয়ারের আক্রমণ রেঞ্জ এবং থ্রাস্ট ড্যামেজ বহুগুণ বাড়িয়ে দেয়।", items: ["Spear"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Spear Sweep", max: "Max Level: III", desc: "স্পিয়ার দিয়ে একসাথে একাধিক শত্রুকে ওয়াইড এরিয়ায় আঘাত করার সুবিধা দেয়।", items: ["Spear"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Luck of the Sea", max: "Max Level: III", desc: "ফিশিং করার সময় রেয়ার ট্রেজার পাওয়ার সম্ভাবনা বাড়ায়।", items: ["Fishing Rod"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Lure", max: "Max Level: III", desc: "মাছ ধরার সময় বরশি টানার অপেক্ষার সময় কমায়।", items: ["Fishing Rod"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Mending", max: "Max Level: I", desc: "এক্সপি অর্জনের মাধ্যমে গিয়ার অটো রিপেয়ার করে।", items: ["All Gear & Tools"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Curse of Binding", max: "Max Level: I", desc: "একবার পরলে মারা না যাওয়া পর্যন্ত আর খোলা যায় না।", items: ["Helmet", "Chestplate", "Leggings", "Boots"] },
+            { icon: "https://minecraft.wiki/images/Enchanted_Book.gif", name: "Curse of Vanishing", max: "Max Level: I", desc: "প্লেয়ার মারা গেলে আইটেমটি চিরতরে মুছে যায়।", items: ["All Gear & Tools"] }
+        ];
+
+        function renderData(list) {
+            const container = document.getElementById("results-list");
+            container.innerHTML = "";
+            if(list.length === 0) {
+                container.innerHTML = "<p style='grid-column: 1/-1; text-align:center; color:#f87171;'>কোনো এনচ্যান্টমেন্ট পাওয়া যায়নি!</p>";
+                return;
+            }
+            list.forEach((item, index) => {
+                const badgesHtml = item.items.map(i => `<span class="badge">🎯 ${i}</span>`).join('');
+                const div = document.createElement("div");
+                div.className = "card";
+                div.style.animationDelay = `${index * 0.03}s`;
+                div.innerHTML = `
+                    <div class="card-header">
+                        <div class="icon-box"><img src="${item.icon}" alt="${item.name}"></div>
+                        <h3>${item.name}</h3>
+                    </div>
+                    <div class="badge-container">${badgesHtml}</div>
+                    <p>${item.desc}</p>
+                    <p class="max-lvl">⭐ ${item.max}</p>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function filterByItem(itemName, event) {
+            document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+            if(event && event.currentTarget) {
+                event.currentTarget.classList.add('active');
+            }
+            if(itemName === 'All') {
+                renderData(enchantments);
+            } else {
+                const filtered = enchantments.filter(e => e.items.includes(itemName) || e.items.includes("All Gear & Tools"));
+                renderData(filtered);
+            }
+        }
+
+        function searchData() {
+            const query = document.getElementById("search-input").value.toLowerCase();
+            const filtered = enchantments.filter(e => 
+                e.name.toLowerCase().includes(query) || 
+                e.desc.toLowerCase().includes(query) || 
+                e.items.some(i => i.toLowerCase().includes(query))
+            );
+            renderData(filtered);
+        }
+
+        const stage = new Stage();
+        stage.init();
+        const mesh = new Mesh(stage);
+        mesh.init();
+
+        window.addEventListener('resize', () => {
+            stage.onResize();
+        });
+
+        function animate() {
+            requestAnimationFrame(animate);
+            mesh.onRaf();
+            stage.onRaf();
+        }
+        animate();
+    </script>
+</body>
+</html>
